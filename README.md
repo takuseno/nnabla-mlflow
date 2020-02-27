@@ -34,6 +34,6 @@ Currently, the following monitors are supported.
 - MonitorTimeElapsed
 
 ## TODO
-- [ ] support MonitorImage and MonitorImageTile
+- [x] support MonitorImage and MonitorImageTile
 - [ ] support `log_model` and `save_model` just like `mlflow.tensorflow` and `mlflow.pytorch`
 - [ ] support NNabla's Trainer
