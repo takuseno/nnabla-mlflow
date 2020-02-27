@@ -1,3 +1,4 @@
+import nnabla as nn
 import mlflow
 import gorilla
 import time
@@ -15,7 +16,7 @@ def _check_interval(index, flush_at, interval):
 def _check_interval_image(index, interval):
     return (index + 1) % interval == 0
 
-def autolog():
+def autolog(with_save_parameters=False):
     @gorilla.patch(MonitorSeries)
     def add_series(self, index, value):
         if _check_interval(index, self.flush_at, self.interval):
@@ -57,6 +58,14 @@ def autolog():
             uri = 'runs:{}/{}'.format(run_id, self.name)
             try_mlflow_log(mlflow.log_artifact, local_path, uri)
 
+    @gorilla.patch(nn)
+    def save_parameters(path, params=None):
+        original = gorilla.get_original_attribute(nn, 'save_parameters')
+        original(path, params)
+        run_id = mlflow.active_run().info.run_id
+        uri = 'runs:{}/{}'.format(run_id, 'parameters')
+        try_mlflow_log(mlflow.log_artifact, path, uri)
+
     settings = gorilla.Settings(allow_hit=True, store_hit=True)
     patches = [
         gorilla.Patch(MonitorSeries, 'add', add_series, settings=settings),
@@ -67,6 +76,11 @@ def autolog():
                       settings=settings),
         gorilla.Patch(MonitorImage, 'add', add_image, settings=settings),
     ]
+
+    if with_save_parameters:
+        patch = gorilla.Patch(nn, 'save_parameters', save_parameters,
+                              settings=settings)
+        patches.append(patch)
 
     for x in patches:
         gorilla.apply(x)

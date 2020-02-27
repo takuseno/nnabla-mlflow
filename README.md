@@ -32,6 +32,13 @@ Currently, the following monitors are supported.
 
 - MonitorSeries
 - MonitorTimeElapsed
+- MonitorImage
+- MonitorImageTile
+
+To automatically save parameters as an artifact, pass `with_save_parameters=True`.
+```py
+nnabla_mlflow.autolog(with_save_parameters=True)
+```
 
 ## TODO
 - [x] support MonitorImage and MonitorImageTile
